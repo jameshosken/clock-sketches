@@ -1,45 +1,34 @@
-console.log("Hello World Voyeur")
+let date =  new Date(Date.now());
 
-console.log(io);
-// import * as io from 'socket.io-client';
+console.log(date);
+let hours = date.getHours();
+let mins = date.getMinutes();
+let secs = date.getSeconds();
 
-let socket = io.connect("/voy");
+let calculateClock = () => {
+    let nanosecondsInAYear = 525600 * 60 * 1000; 
 
-let hours = 0;
-let mins = 0;
-let secs = 0;
+    //https://en.wikipedia.org/wiki/Ultimate_fate_of_the_universe
+    let ageOfUniverseInHours = 13000000000 + date/nanosecondsInAYear;  //Add current date, converted to hours
+    let predictedLifespanOfClosedUniverse = 13000000000 + 17000000000;
+    hours = ageOfUniverseInHours / predictedLifespanOfClosedUniverse;
+    
+    //https://en.wikipedia.org/wiki/Future_of_Earth#cite_note-FOOTNOTEFishbaughDes_MaraisKorablevRaulin2007114-15
+    
+    let ageOfEarthInHours = 4543000000 + date/nanosecondsInAYear;
+    let predictedLifespanOfEarth = 4543000000 + 7500000000;
+    mins = ageOfEarthInHours/predictedLifespanOfEarth;
+    
+    //https://en.wikipedia.org/wiki/Future_of_Earth#cite_note-FOOTNOTEFishbaughDes_MaraisKorablevRaulin2007114-15
+    let ageOfHumans = 250000 + date/nanosecondsInAYear;
 
-let hasDate = false;
-let connections = 0;
+    // Convert age to "2 mins before midnight:"
+    let predictedAgeOfHumans = 250000/58 * 60;
+    secs =  ageOfHumans / predictedAgeOfHumans;
+    console.log(date/nanosecondsInAYear);
+    
+}
 
-
-socket.on('connection', function(socket){
-    console.log('a user connected');
-});
-
-socket.on('disconnect', function(){
-    console.log('user disconnected');
-});
-
-socket.on('voyTime', function(msg){
-    console.log("Received: "+ msg);
-    hasDate = true;
-    console.log(typeof(msg));
-
-    let date = new Date(msg);
-    console.log(date);
-    hours = date.getHours();
-    mins = date.getMinutes();
-    secs = date.getSeconds();
-
-    console.log("TIME: " + hours + ":" + mins + ":" + secs);
-});
-
-
-socket.on('cnx', function(msg){
-    console.log("CNX Received: "+ msg);
-    connections = msg;
-});
 
 
 //https://p5js.org/examples/input-clock.html
@@ -51,10 +40,12 @@ let hoursRadius;
 let clockDiameter;
 
 
+
 let state = 0;
 function setup(){
-    console.log("Canvas")
-    createCanvas(720, 400);
+
+    calculateClock();
+    createCanvas(window.innerWidth, window.innerHeight);
     stroke(255);
   
     let radius = min(width, height) / 2;
@@ -74,9 +65,7 @@ function draw(){
     background(255);
 
     fill(0,0,128);
-    text("Connections: " + connections, 28,28);
 
-    if(!hasDate){return;}
     renderFace()
     renderHands()
 
@@ -85,10 +74,18 @@ function draw(){
 let renderFace = function(){
     
     noStroke();
-    fill(244, 122, 158);
+    fill(191, 215, 234);
     ellipse(cx, cy, clockDiameter + 25, clockDiameter + 25);
-    fill(237, 34, 93);
+    
+    fill(11, 57, 84);
     ellipse(cx, cy, clockDiameter, clockDiameter);
+    strokeWeight(1);
+
+    push();
+    stroke(0);
+    
+    line(cx, cy, cx , cy - clockDiameter/2);
+    pop()
   
 }
 
@@ -96,12 +93,12 @@ let renderHands = function(){
     // Angles for sin() and cos() start at 3 o'clock;
     // subtract HALF_PI to make them start at the top
 
-    let s = map(secs, 0, 60, 0, TWO_PI) - HALF_PI;
-    let m = map(mins + norm(secs, 0, 60), 0, 60, 0, TWO_PI) - HALF_PI;
-    let h = map(hours + norm(mins, 0, 60), 0, 24, 0, TWO_PI * 2) - HALF_PI;
+    let s = map(secs, 0, 1, 0, TWO_PI) - HALF_PI;
+    let m = map(mins, 0, 1, 0, TWO_PI) - HALF_PI;
+    let h = map(hours, 0, 1, 0, TWO_PI) - HALF_PI;
 
     // Draw the hands of the clock
-    stroke(255);
+    stroke(255, 255, 252);
     strokeWeight(1);
     line(cx, cy, cx + cos(s) * secondsRadius, cy + sin(s) * secondsRadius);
     strokeWeight(2);
@@ -109,14 +106,12 @@ let renderHands = function(){
     strokeWeight(4);
     line(cx, cy, cx + cos(h) * hoursRadius, cy + sin(h) * hoursRadius);
 
-    // Draw the minute ticks
-    strokeWeight(2);
-    beginShape(POINTS);
-    for (let a = 0; a < 360; a += 6) {
-        let angle = radians(a);
-        let x = cx + cos(angle) * secondsRadius;
-        let y = cy + sin(angle) * secondsRadius;
-        vertex(x, y);
-    }
-    endShape();
+    
+
 }
+
+// $color1: rgba(11, 57, 84, 1);
+// $color2: rgba(191, 215, 234, 1);
+// $color3: rgba(0, 0, 0, 1);
+// $color4: rgba(255, 255, 252, 1);
+// $color5: rgba(254, 255, 254, 1);

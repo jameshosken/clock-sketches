@@ -1,60 +1,63 @@
-console.log("Hello World")
+
+console.log("Hello World Voyeur")
 
 console.log(io);
 // import * as io from 'socket.io-client';
 
-let socket = io.connect("/shy");
+let socket = io.connect("/voy");
 
 let hours = 0;
 let mins = 0;
 let secs = 0;
 
-let hasDate = false;
-let connections = 0;
-
-
-socket.on('connection', function(socket){
-    console.log('a user connected');
-});
-
-socket.on('disconnect', function(){
-    console.log('user disconnected');
-});
-
-socket.on('shyTime', function(msg){
-    console.log("Received: "+ msg);
-    hasDate = true;
-    console.log(typeof(msg));
-
-    let date = new Date(msg);
-    console.log(date);
-    hours = date.getHours();
-    mins = date.getMinutes();
-    secs = date.getSeconds();
-
-    console.log("TIME: " + hours + ":" + mins + ":" + secs);
-});
-
-
-socket.on('cnx', function(msg){
-    console.log("CNX Received: "+ msg);
-    connections = msg;
-});
-
-
-//https://p5js.org/examples/input-clock.html
 
 let cx, cy;
 let secondsRadius;
 let minutesRadius;
 let hoursRadius;
 let clockDiameter;
+let timeIncreaseIncrement = 1; 
 
 
-let state = 0;
+let date;
+let timeStamp;
+
+let prevVector;
+let threshhold = 1;
+let txt = "";
+let debug = true; // TODO fix accelerometer issue
+
+
+function setupTime(){
+    timeStamp = Date.now();
+    
+    date = new Date(timeStamp);
+    console.log(date);
+    
+}
+
+function getTime(){
+    
+    date = new Date(timeStamp);
+    hours = date.getHours();
+    mins = date.getMinutes();
+    secs = date.getSeconds();
+}
+
+function updateTime(mult){
+    timeStamp += timeIncreaseIncrement * mult
+    console.log(timeStamp);
+}
+
+
 function setup(){
-    console.log("Canvas");
+
+
+
     createCanvas(window.innerWidth, window.innerHeight);
+    setupTime();
+    getTime();
+
     stroke(255);
   
     let radius = min(width, height) / 2;
@@ -74,12 +77,44 @@ function draw(){
     background(255);
 
     fill(0,0,128);
-    text("Connections: " + connections, 28,28);
+    // text(txt, 50,50);
 
-    if(!hasDate){return;}
     renderFace()
     renderHands()
 
+    detectMotion();
+    getTime();
+
+}
+
+let detectMotion = function(){
+    
+    let x,y,z;
+    let vec;
+
+    if(debug){
+        x = mouseX - pmouseX;
+        y = mouseX - pmouseX;
+        vec = createVector(x,y);
+    }else{
+        x = accelerationX - pAccelerationX;
+        y = accelerationY - pAccelerationY;
+        z = accelerationZ - pAccelerationZ;
+        createVector(x,y,z);
+    }
+    
+
+    
+    let motion = p5.Vector.sub(vec, prevVector);
+
+    if(motion.mag() > threshhold){
+        updateTime(motion.mag());
+    }
+
+    txt = x + " " + y + " " + z;
+
+
+    prevVector = vec;
 }
 
 let renderFace = function(){

@@ -43,7 +43,7 @@ shyIO.on('connection', function(socket){
     socket.on('disconnect', function(){
         shyClock.connections--;
         shyIO.emit('cnx', shyClock.connections);
-        console.log('user disconnected');
+        // console.log('user disconnected');
     });
 });
 
@@ -128,16 +128,16 @@ class VoyeurClock{
 
     tryStartIntervalTimer(socket){
         let self = this;
-        console.log("Try Setting Unterval Timer")
+        // console.log("Try Setting Unterval Timer")
         if(!self.hasUser){
-            console.log("Setting Unterval Timer")
+            // console.log("Setting Unterval Timer")
             self.hasUser = true;
             
             //Set 1 second update timer
             self.timer = setInterval(function(){
-                console.log(self.visibleTime);
+                // console.log(self.visibleTime);
                 self.lerpTime();
-                socket.emit('voyTime', self.visibleTime)
+                // socket.emit('voyTime', self.visibleTime)
             }, 1000);
         }
     }
