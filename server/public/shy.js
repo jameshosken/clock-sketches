@@ -1,8 +1,9 @@
-console.log("i Hello World")
+console.log("Hello World")
 
 console.log(io);
 // import * as io from 'socket.io-client';
-let socket = io.connect();
+
+let socket = io.connect("/shy");
 
 let hours = 0;
 let mins = 0;
@@ -20,11 +21,9 @@ socket.on('disconnect', function(){
     console.log('user disconnected');
 });
 
-socket.on('timestamp', function(msg){
+socket.on('shyTime', function(msg){
     console.log("Received: "+ msg);
     hasDate = true;
-
-
     console.log(typeof(msg));
 
     let date = new Date(msg);
@@ -33,7 +32,7 @@ socket.on('timestamp', function(msg){
     mins = date.getMinutes();
     secs = date.getSeconds();
 
-    console.log(hours, + ":" + mins, + ":" + secs);
+    console.log("TIME: " + hours + ":" + mins + ":" + secs);
 });
 
 
@@ -100,7 +99,6 @@ let renderHands = function(){
     let s = map(secs, 0, 60, 0, TWO_PI) - HALF_PI;
     let m = map(mins + norm(secs, 0, 60), 0, 60, 0, TWO_PI) - HALF_PI;
     let h = map(hours + norm(mins, 0, 60), 0, 24, 0, TWO_PI * 2) - HALF_PI;
-
 
     // Draw the hands of the clock
     stroke(255);

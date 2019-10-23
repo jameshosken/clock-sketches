@@ -1,11 +1,22 @@
 console.log("Server Starting"); 
+
+
+///////////////////////
+// CLOCK DEFINITIONS //
+///////////////////////
+
+let shyClock;
+let voyClock;
+
+//////////////////
+// SERVER SETUP //
+//////////////////
+
 var express = require('express'),
     path = require('path'),
     app = express();
 
-//var app = require('express')();
 var http = require('http').createServer(app);
-var io = require('socket.io')(http);
 
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -14,52 +25,128 @@ app.get('/', function(req, res) {
     res.redirect('index.html');
 });
 
+////////////////////////
+// SOCKET APPLICATIONS //
+////////////////////////
 
-///VARS
-let connections = 0;
-let visibleTime = Date.now();
-let timeDelay = 0;
-let catchupSpeed = 0.1;
+let io = require('socket.io')(http);
 
-setInterval(() => {
-    if(connections == 0){
-        lerpTime();
-    }
+var shyIO = io.of('/shy');
 
-    // timeDelay = Date.now() - visibleTime;
-    // console.log("Connections: " + connections);
-    // console.log("Time Delay: " + Math.floor(timeDelay/1000) + " seconds"); 
+shyIO.on('connection', function(socket){
+    shyClock.connections++;
 
-}, 500);
+    socket.emit('shyTime', shyClock.visibleTime);
 
-let lerpTime = function(){
-    visibleTime = lerp(visibleTime, Date.now(), catchupSpeed);
+    shyIO.emit('cnx', shyClock.connections);
+
+    socket.on('disconnect', function(){
+        shyClock.connections--;
+        shyIO.emit('cnx', shyClock.connections);
+        console.log('user disconnected');
+    });
+});
+
+
+//Voyeur Clock
+var voyIO = io.of('/voy');
+
+voyIO.on('connection', function(socket){
+    voyClock.connections++;
+    voyClock.tryStartIntervalTimer(voyIO);
+
+    voyIO.emit('cnx', voyClock.connections);
+
+    socket.on('disconnect', function(){
+        voyClock.connections--;
+        voyIO.emit('cnx', voyClock.connections);
+        voyClock.tryEndIntervalTimer();
+    });
+});
+
+http.listen(3000, function(){
+    console.log('Listening on port ' + http.address().port); //Listening on port 8888
+    setup();
+});
+
+///////////////////////
+// UTILITY FUNCTIONS //
+///////////////////////
+
+
+
+function setup(){
+    shyClock = new ShyClock();
+    voyClock = new VoyeurClock();
+    
+    setInterval(() => {
+        shyClock.lerpTime();
+    }, 500);
 }
 
 function lerp (start, end, amt){
     return (1-amt)*start+amt*end;
 }
 
-io.on('connection', function(socket){
-    connections++;
-    // console.log('a user connected, sending time:' + visibleTime);
-    
-    socket.emit('timestamp', visibleTime);
-
-    io.emit('cnx', connections);
-
-    socket.on('disconnect', function(){
-        connections--;
-        
-        io.emit('cnx', connections);
-        console.log('user disconnected');
-    });
-});
 
 
+///////////////////
+// CLOCK CLASSES //
+///////////////////
+class ShyClock{
 
-http.listen(3000, function(){
-    setup();
-});
+    constructor(){
+        this.visibleTime = Date.now();
+        this.catchupSpeed = 0.1;
+        this.connections = 0;
+    }
 
-    console.log('Listening on port ' + http.address().port); //Listening on port 8888
+    lerpTime(){
+        if(this.connections == 0){
+            this.visibleTime = lerp(this.visibleTime, Date.now(), this.catchupSpeed);
+        }
+    }
+
+}
+
+
+class VoyeurClock{
+
+    constructor(){
+        this.visibleTime = Date.now();
+        this.catchupSpeed = 0.15;
+        this.connections = 0;
+        this.hasUser = false;
+    }
+
+    lerpTime(){
+        let self = this;
+        if(this.connections > 0){
+            self.visibleTime = lerp(self.visibleTime, Date.now(), self.catchupSpeed);
+        }
+    }
+
+    tryStartIntervalTimer(socket){
+        let self = this;
+        console.log("Try Setting Unterval Timer")
+        if(!self.hasUser){
+            console.log("Setting Unterval Timer")
+            self.hasUser = true;
+            
+            //Set 1 second update timer
+            self.timer = setInterval(function(){
+                console.log(self.visibleTime);
+                self.lerpTime();
+                socket.emit('voyTime', self.visibleTime)
+            }, 1000);
+        }
+    }
+
+    tryEndIntervalTimer(){
+        if(this.hasUser && this.connections == 0){
+            this.hasUser = false;
+            clearInterval(this.timer);
+        }
+    }
+
+}
