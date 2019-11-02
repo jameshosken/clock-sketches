@@ -53,8 +53,7 @@ let clockDiameter;
 
 let state = 0;
 function setup(){
-    console.log("Canvas")
-    createCanvas(720, 400);
+    createCanvas(window.innerWidth, window.innerHeight);
     stroke(255);
   
     let radius = min(width, height) / 2;
@@ -71,13 +70,13 @@ function setup(){
 
 function draw(){
 
-    background(255);
+    background(11,0,20);
 
-    fill(0,0,128);
-    text("Connections: " + connections, 28,28);
+    fill(113, 6, 39);
+    text("Others watching: " + (connections-1), 36,36);
 
-    if(!hasDate){return;}
     renderFace()
+    if(!hasDate){return;}
     renderHands()
 
 }
@@ -85,9 +84,9 @@ function draw(){
 let renderFace = function(){
     
     noStroke();
-    fill(244, 122, 158);
-    ellipse(cx, cy, clockDiameter + 25, clockDiameter + 25);
-    fill(237, 34, 93);
+    fill(158, 25, 70);
+    ellipse(cx, cy, clockDiameter + 15, clockDiameter + 15);
+    fill(113,6,39);
     ellipse(cx, cy, clockDiameter, clockDiameter);
   
 }
@@ -101,7 +100,7 @@ let renderHands = function(){
     let h = map(hours + norm(mins, 0, 60), 0, 24, 0, TWO_PI * 2) - HALF_PI;
 
     // Draw the hands of the clock
-    stroke(255);
+    stroke(245,233,226);
     strokeWeight(1);
     line(cx, cy, cx + cos(s) * secondsRadius, cy + sin(s) * secondsRadius);
     strokeWeight(2);
@@ -110,9 +109,10 @@ let renderHands = function(){
     line(cx, cy, cx + cos(h) * hoursRadius, cy + sin(h) * hoursRadius);
 
     // Draw the minute ticks
+    stroke(11,0,20);
     strokeWeight(2);
     beginShape(POINTS);
-    for (let a = 0; a < 360; a += 6) {
+    for (let a = 0; a < 360; a += 12) {
         let angle = radians(a);
         let x = cx + cos(angle) * secondsRadius;
         let y = cy + sin(angle) * secondsRadius;

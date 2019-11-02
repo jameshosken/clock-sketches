@@ -71,10 +71,10 @@ function setup(){
 
 function draw(){
 
-    background(255);
+    background(221, 216, 184);
 
-    fill(0,0,128);
-    text("Connections: " + connections, 28,28);
+    fill(106,102,163);
+    text("Others Watching: " + (connections-1), 28,28);
 
     if(!hasDate){return;}
     renderFace()
@@ -85,9 +85,9 @@ function draw(){
 let renderFace = function(){
     
     noStroke();
-    fill(244, 122, 158);
+    fill(106,102,163);
     ellipse(cx, cy, clockDiameter + 25, clockDiameter + 25);
-    fill(237, 34, 93);
+    fill(84, 46, 113);
     ellipse(cx, cy, clockDiameter, clockDiameter);
   
 }
@@ -101,15 +101,19 @@ let renderHands = function(){
     let h = map(hours + norm(mins, 0, 60), 0, 24, 0, TWO_PI * 2) - HALF_PI;
 
     // Draw the hands of the clock
-    stroke(255);
+    stroke(132,169,192);
     strokeWeight(1);
     line(cx, cy, cx + cos(s) * secondsRadius, cy + sin(s) * secondsRadius);
+    stroke(179,203,185);
     strokeWeight(2);
     line(cx, cy, cx + cos(m) * minutesRadius, cy + sin(m) * minutesRadius);
+    stroke(221,216,184);
     strokeWeight(4);
     line(cx, cy, cx + cos(h) * hoursRadius, cy + sin(h) * hoursRadius);
 
     // Draw the minute ticks
+    
+    fill(106,102,163);
     strokeWeight(2);
     beginShape(POINTS);
     for (let a = 0; a < 360; a += 6) {

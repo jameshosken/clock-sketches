@@ -1,10 +1,6 @@
 
 console.log("Hello World Voyeur")
 
-console.log(io);
-// import * as io from 'socket.io-client';
-
-let socket = io.connect("/voy");
 
 let hours = 0;
 let mins = 0;
@@ -94,7 +90,7 @@ let detectMotion = function(){
 
     if(debug){
         x = mouseX - pmouseX;
-        y = mouseX - pmouseX;
+        y = mouseY - pmouseY;
         vec = createVector(x,y);
     }else{
         x = accelerationX - pAccelerationX;

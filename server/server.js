@@ -34,6 +34,7 @@ let io = require('socket.io')(http);
 var shyIO = io.of('/shy');
 
 shyIO.on('connection', function(socket){
+    console.log("Shy Connection");
     shyClock.connections++;
 
     socket.emit('shyTime', shyClock.visibleTime);
@@ -41,6 +42,7 @@ shyIO.on('connection', function(socket){
     shyIO.emit('cnx', shyClock.connections);
 
     socket.on('disconnect', function(){
+        console.log("Shy Disonnection");
         shyClock.connections--;
         shyIO.emit('cnx', shyClock.connections);
         // console.log('user disconnected');
@@ -52,12 +54,14 @@ shyIO.on('connection', function(socket){
 var voyIO = io.of('/voy');
 
 voyIO.on('connection', function(socket){
+    console.log("Voyeur Connection");
     voyClock.connections++;
     voyClock.tryStartIntervalTimer(voyIO);
 
     voyIO.emit('cnx', voyClock.connections);
 
     socket.on('disconnect', function(){
+        console.log("Voyeur Disconnection");
         voyClock.connections--;
         voyIO.emit('cnx', voyClock.connections);
         voyClock.tryEndIntervalTimer();
@@ -114,7 +118,7 @@ class VoyeurClock{
 
     constructor(){
         this.visibleTime = Date.now();
-        this.catchupSpeed = 0.15;
+        this.catchupSpeed = 0.05;
         this.connections = 0;
         this.hasUser = false;
     }
@@ -122,7 +126,8 @@ class VoyeurClock{
     lerpTime(){
         let self = this;
         if(this.connections > 0){
-            self.visibleTime = lerp(self.visibleTime, Date.now(), self.catchupSpeed);
+            self.visibleTime = lerp(self.visibleTime, Date.now(), self.catchupSpeed * self.connections);
+            // console.log("Delay: " + (Date.now() - self.visibleTime));
         }
     }
 
@@ -137,7 +142,7 @@ class VoyeurClock{
             self.timer = setInterval(function(){
                 // console.log(self.visibleTime);
                 self.lerpTime();
-                // socket.emit('voyTime', self.visibleTime)
+                socket.emit('voyTime', self.visibleTime)
             }, 1000);
         }
     }
